@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ product.name }}</h2>
+{% if product.image_filename %}
+<img src="{{ url_for('main.uploads', filename=product.image_filename) }}"
+     class="img-thumbnail mb-3" alt="{{ product.name }}">
+{% endif %}
+<p><strong>产品描述：</strong>{{ product.description | safe }}</p>
+<p><strong>配料：</strong>{{ product.ingredients | safe }}</p>
+<p><strong>工艺：</strong>{{ product.process | safe }}</p>
+<p><strong>功效：</strong>{{ product.efficacy | safe }}</p>
+<p><strong>所属分类：</strong>
+  {% for c in product.categories %}
+    <a href="{{ url_for('main.products_by_category', category_id=c.id) }}"
+       class="badge bg-secondary text-decoration-none">
+      {{ c.name }}
+    </a>
+  {% endfor %}
+</p>
+
+<p><strong>参考文献：</strong><br>
+  {{ product.reference | safe }}
+</p>
+
+<p><strong>产品规格：</strong>{{ product.size }}</p>
+<a href="{{ url_for('main.product_list') }}">&laquo; 返回列表</a>
+{% endblock %}

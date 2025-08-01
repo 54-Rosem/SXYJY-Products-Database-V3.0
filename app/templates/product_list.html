@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- 搜索表单 + 分类筛选入口 -->
+<form class="mb-4" method="get" action="{{ url_for('main.product_list') }}">
+  <div class="input-group">
+    <input type="text" name="q"
+           class="form-control"
+           placeholder="搜索产品..."
+           value="{{ q|default('') }}">
+    <button class="btn btn-primary" type="submit">搜索</button>
+    <a href="{{ url_for('main.categories') }}"
+       class="btn btn-outline-secondary">分类筛选</a>
+  </div>
+</form>
+
+<!-- 产品卡片网格 -->
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  {% for p in products %}
+  <div class="col">
+    <div class="card h-100">
+      {% if p.image_filename %}
+      <img src="{{ url_for('main.uploads', filename=p.image_filename) }}"
+           class="card-img-top" alt="{{ p.name }}">
+      {% endif %}
+      <div class="card-body">
+        <h5 class="card-title">{{ p.name }}</h5>
+        <p class="card-text text-truncate">{{ p.description }}</p>
+        <p>
+          {% for c in p.categories %}
+            <a href="{{ url_for('main.products_by_category', category_id=c.id) }}"
+               class="badge bg-secondary text-decoration-none">
+              {{ c.name }}
+            </a>
+          {% endfor %}
+        </p>
+      </div>
+      <div class="card-footer text-end">
+        <a href="{{ url_for('main.product_detail', product_id=p.id) }}"
+           class="btn btn-sm btn-outline-primary">查看详情</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

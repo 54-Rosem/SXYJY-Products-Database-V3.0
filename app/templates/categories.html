@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>分类列表</h2>
+
+  <!-- 按剂型分类 -->
+  <h4 class="mt-4">按剂型分类</h4>
+  <div class="mb-3">
+    {% for c in form_categories %}
+      <a href="{{ url_for('main.products_by_category', category_id=c.id) }}"
+         class="btn btn-outline-primary btn-sm m-1">
+        {{ c.name }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- 按功效分类 -->
+  <h4 class="mt-4">按功效分类</h4>
+  <div class="mb-3">
+    {% for c in efficacy_categories %}
+      <a href="{{ url_for('main.products_by_category', category_id=c.id) }}"
+         class="btn btn-outline-success btn-sm m-1">
+        {{ c.name }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <a href="{{ url_for('main.product_list') }}">« 返回产品列表</a>
+{% endblock %}
