@@ -38,3 +38,18 @@ class Product(db.Model):
     categories = db.relationship('Category', secondary=product_category, backref=db.backref('products', lazy='dynamic'))
     def __repr__(self):
         return f'<Product {self.name}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'ingredients': self.ingredients,
+            'process': self.process,
+            'efficacy': self.efficacy,
+            'image_filename': self.image_filename,
+            'reference': self.reference,
+            'size': self.size,
+            # categories 字段是一个列表，包含该产品关联的所有分类的名称
+            'categories': [category.name for category in self.categories]
+        }
