@@ -16,8 +16,9 @@
 
 {% if request.args.get('admin') == 'true' %}
   <h3>新增产品</h3>
+  <button class="btn btn-outline-success mb-3" id="toggle-add-form-btn">显示新增产品表单</button>
   <!-- 添加产品表单 -->
-  <form id="add-product-form" class="mb-4">
+  <form id="add-product-form" class="mb-4" style="display: none;">
     <div class="mb-3">
       <label class="form-label">产品名称 *</label>
       <input type="text" class="form-control" id="name" required>
@@ -354,6 +355,16 @@
       })
       .catch(err => alert('网络错误：'+err.message));
   }
+    // 切换新增产品表单的显示隐藏
+  const toggleBtn = document.getElementById('toggle-add-form-btn');
+  const formEl = document.getElementById('add-product-form');
+  let isFormVisible = false;
+
+  toggleBtn.addEventListener('click', () => {
+    isFormVisible = !isFormVisible;
+    formEl.style.display = isFormVisible ? 'block' : 'none';
+    toggleBtn.textContent = isFormVisible ? '隐藏新增产品表单' : '显示新增产品表单';
+  });
 </script>
 
 {% endblock %}
