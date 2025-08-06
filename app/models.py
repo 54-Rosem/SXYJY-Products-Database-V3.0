@@ -50,6 +50,6 @@ class Product(db.Model):
             'image_filename': self.image_filename,
             'reference': self.reference,
             'size': self.size,
-            # categories 字段是一个列表，包含该产品关联的所有分类的名称
-            'categories': [category.name for category in self.categories]
+            'categories': [{'id': c.id, 'name': c.name} for c in self.categories],
+            'category_ids': [c.id for c in self.categories]
         }

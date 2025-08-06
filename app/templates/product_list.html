@@ -40,20 +40,32 @@
     </div>
     <div class="mb-3">
       <label class="form-label">按剂型分类（多选）</label>
-      <select id="form_category_ids" class="form-select" multiple size="6">
+      <div>
         {% for cat in form_categories %}
-          <option value="{{ cat.id }}">{{ cat.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="mb-3">
-    <label class="form-label">按功效分类（多选）</label>
-    <select id="efficacy_category_ids" class="form-select" multiple size="6">
-      {% for cat in efficacy_categories %}
-        <option value="{{ cat.id }}">{{ cat.name }}</option>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox"
+                 id="form-cat-{{ cat.id }}" value="{{ cat.id }}">
+          <label class="form-check-label" for="form-cat-{{ cat.id }}">
+            {{ cat.name }}
+          </label>
+      </div>
       {% endfor %}
-    </select>
-  </div>
+     </div>
+    </div>
+      <div class="mb-3">
+      <label class="form-label">按功效分类（多选）</label>
+      <div>
+        {% for cat in efficacy_categories %}
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox"
+                 id="form-cat-{{ cat.id }}" value="{{ cat.id }}">
+          <label class="form-check-label" for="form-cat-{{ cat.id }}">
+            {{ cat.name }}
+          </label>
+      </div>
+      {% endfor %}
+     </div>
+    </div>
 
   <div class="mb-3">
     <label class="form-label">参考依据</label>
@@ -98,8 +110,8 @@
         <a href="{{ url_for('main.product_detail', product_id=p.id) }}"
            class="btn btn-sm btn-outline-primary">查看详情</a>
         {% if request.args.get('admin') == 'true' %}
-        <button class="btn btn-sm btn-outline-secondary me-2" onclick="editProduct({{ p.id }})">编辑</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct({{ p.id }})">删除</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="editProduct({{ p.id }})">编辑</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteProduct({{ p.id }})">删除</button>
         {% endif %}
       </div>
     </div>
@@ -155,22 +167,41 @@
 
           <!-- 分类选择 -->
           <div class="mb-3">
-            <label class="form-label">按剂型分类</label>
-            <select class="form-select" id="edit-form-categories" multiple>
+            <label class="form-label">按剂型分类（多选）</label>
+            <div>
               {% for cat in form_categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="edit-form-cat-{{ cat.id }}"
+                       value="{{ cat.id }}">
+                <label class="form-check-label"
+                       for="edit-form-cat-{{ cat.id }}">
+                  {{ cat.name }}
+                </label>
+              </div>
               {% endfor %}
-            </select>
+            </div>
           </div>
+
+          <!-- 分类选择：功效 -->
           <div class="mb-3">
-            <label class="form-label">按功效分类</label>
-            <select class="form-select" id="edit-efficacy-categories" multiple>
+            <label class="form-label">按功效分类（多选）</label>
+            <div>
               {% for cat in efficacy_categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="edit-effi-cat-{{ cat.id }}"
+                       value="{{ cat.id }}">
+                <label class="form-check-label"
+                       for="edit-effi-cat-{{ cat.id }}">
+                  {{ cat.name }}
+                </label>
+              </div>
               {% endfor %}
-            </select>
+            </div>
           </div>
-        </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">保存修改</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -181,142 +212,148 @@
 </div>
 
 <script>
-document.getElementById('add-product-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
+  // 新增产品：收集两个 checkbox 组
+  document.getElementById('add-product-form')
+    .addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formCatIds = Array.from(
+        document.querySelectorAll('input[id^="form-cat-"]:checked')
+      ).map(chk => parseInt(chk.value, 10));
+      const effiCatIds = Array.from(
+        document.querySelectorAll('input[id^="effi-cat-"]:checked')
+      ).map(chk => parseInt(chk.value, 10));
+      const category_ids = Array.from(new Set([...formCatIds, ...effiCatIds]));
 
-  // 获取所有选中的分类 ID（整型数组）
-  const formSelected = Array.from(document.getElementById('form_category_ids').selectedOptions).map(opt => parseInt(opt.value));
-  const efficacySelected = Array.from(document.getElementById('efficacy_category_ids').selectedOptions).map(opt => parseInt(opt.value));
-  const selectedCategories = [...new Set([...formSelected, ...efficacySelected])];
+      const data = {
+        name:           document.getElementById('name').value.trim(),
+        description:    document.getElementById('description').value.trim(),
+        ingredients:    document.getElementById('ingredients').value.trim(),
+        process:        document.getElementById('process').value.trim(),
+        efficacy:       document.getElementById('efficacy').value.trim(),
+        reference:      document.getElementById('reference').value.trim(),
+        size:           document.getElementById('size').value.trim(),
+        image_filename: document.getElementById('image_filename').value.trim(),
+        category_ids
+      };
 
-  const data = {
-    name: document.getElementById('name').value.trim(),
-    ingredients: document.getElementById('ingredients').value.trim(),
-    process: document.getElementById('process').value.trim(),
-    efficacy: document.getElementById('efficacy').value.trim(),
-    reference: document.getElementById('reference').value.trim(),
-    size: document.getElementById('size').value.trim(),
-    description: document.getElementById('description').value.trim(),
-    image_filename: document.getElementById('image_filename').value.trim(),
-    category_ids: selectedCategories  // 把分类一并提交
-  };
-
-  if (!data.name) {
-    alert('产品名称为必填项');
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    if (res.ok) {
-      alert('添加成功！');
-      window.location.reload();
-    } else {
-      const err = await res.json();
-      alert('添加失败: ' + (err.message || '未知错误'));
-    }
-  } catch (err) {
-    alert('网络错误: ' + err.message);
-  }
-});
-
-// 编辑产品弹窗，加载产品数据并预选分类
-function editProduct(id) {
-  fetch(`/api/products/${id}`)
-    .then(res => res.json())
-    .then(data => {
-      // 注意：这里的 id、name、description... 都必须和模态框里写的 id 一模一样
-      document.getElementById('edit-id').value            = data.id;
-      document.getElementById('edit-name').value          = data.name;
-      document.getElementById('edit-description').value   = data.description;
-      document.getElementById('edit-ingredients').value   = data.ingredients;
-      document.getElementById('edit-process').value       = data.process;
-      document.getElementById('edit-efficacy').value      = data.efficacy;
-      document.getElementById('edit-reference').value     = data.reference;
-      document.getElementById('edit-size').value          = data.size;
-      document.getElementById('edit-image_filename').value = data.image_filename;
-
-      // 下面分类预选也要保证 select 的 id 对得上
-      const selectedCatIds = data.categories; // 如果 to_dict 返回的 categories 是 id 列表
-      const formSelect     = document.getElementById('edit-form-categories');
-      const effiSelect     = document.getElementById('edit-efficacy-categories');
-
-      Array.from(formSelect.options).forEach(opt => {
-        opt.selected = selectedCatIds.includes(parseInt(opt.value));
-      });
-      Array.from(effiSelect.options).forEach(opt => {
-        opt.selected = selectedCatIds.includes(parseInt(opt.value));
-      });
-
-      new bootstrap.Modal(document.getElementById('editModal')).show();
-    });
-}
-
-
-// 编辑产品表单提交
-document.getElementById('edit-product-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const id = document.getElementById('edit-id').value;
-
-  const formCatIds = Array.from(document.getElementById('edit-form-categories').selectedOptions).map(opt => parseInt(opt.value));
-  const efficacyCatIds = Array.from(document.getElementById('edit-efficacy-categories').selectedOptions).map(opt => parseInt(opt.value));
-  const categoryIds = [...new Set([...formCatIds, ...efficacyCatIds])];
-
-  const data = {
-    name: document.getElementById('edit-name').value.trim(),
-    description: document.getElementById('edit-description').value.trim(),
-    ingredients: document.getElementById('edit-ingredients').value.trim(),
-    process: document.getElementById('edit-process').value.trim(),
-    efficacy: document.getElementById('edit-efficacy').value.trim(),
-    reference: document.getElementById('edit-reference').value.trim(),
-    size: document.getElementById('edit-size').value.trim(),
-    image_filename: document.getElementById('edit-image_filename').value.trim(),
-    category_ids: categoryIds
-  };
-
-  if (!data.name) {
-    alert('产品名称为必填项');
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/products/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    if (res.ok) {
-      alert('更新成功！');
-      window.location.reload();
-    } else {
-      const err = await res.json();
-      alert('更新失败: ' + (err.message || '未知错误'));
-    }
-  } catch (err) {
-    alert('网络错误: ' + err.message);
-  }
-});
-
-// 删除产品
-function deleteProduct(id) {
-  if (!confirm('确定要删除该产品吗？')) return;
-  fetch(`/api/products/${id}`, { method: 'DELETE' })
-    .then(res => {
-      if (res.ok) {
-        alert('删除成功！');
-        window.location.reload();
-      } else {
-        alert('删除失败！');
+      if (!data.name) {
+        alert('产品名称为必填项');
+        return;
       }
-    })
-    .catch(err => alert('网络错误: ' + err.message));
-}
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          alert('添加成功！');
+          location.reload();
+        } else {
+          const err = await res.json();
+          alert('添加失败：' + (err.message||res.statusText));
+        }
+      } catch (err) {
+        alert('网络错误：' + err.message);
+      }
+    });
+
+  // 编辑产品弹窗
+  function editProduct(id) {
+    fetch(`/api/products/${id}`)
+      .then(r => r.json())
+      .then(data => {
+        // 基础字段
+        document.getElementById('edit-id').value = data.id;
+        document.getElementById('edit-name').value = data.name;
+        document.getElementById('edit-description').value = data.description;
+        document.getElementById('edit-ingredients').value = data.ingredients;
+        document.getElementById('edit-process').value = data.process;
+        document.getElementById('edit-efficacy').value = data.efficacy;
+        document.getElementById('edit-reference').value = data.reference;
+        document.getElementById('edit-size').value = data.size;
+        document.getElementById('edit-image_filename').value = data.image_filename;
+
+        // 先取消所有勾选
+        document.querySelectorAll('[id^="edit-form-cat-"]').forEach(chk => chk.checked = false);
+        document.querySelectorAll('[id^="edit-effi-cat-"]').forEach(chk => chk.checked = false);
+
+        // 根据返回的 data.category_ids 预选
+        (data.category_ids||[]).forEach(cid => {
+          let el = document.getElementById(`edit-form-cat-${cid}`)
+                || document.getElementById(`edit-effi-cat-${cid}`);
+          if (el) el.checked = true;
+        });
+
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('加载产品失败');
+      });
+  }
+
+  // 保存编辑
+  document.getElementById('edit-product-form')
+    .addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const formCatIds = Array.from(
+        document.querySelectorAll('input[id^="edit-form-cat-"]:checked')
+      ).map(chk => parseInt(chk.value,10));
+      const effiCatIds = Array.from(
+        document.querySelectorAll('input[id^="edit-effi-cat-"]:checked')
+      ).map(chk => parseInt(chk.value,10));
+      const category_ids = Array.from(new Set([...formCatIds, ...effiCatIds]));
+
+      const data = {
+        name:           document.getElementById('edit-name').value.trim(),
+        description:    document.getElementById('edit-description').value.trim(),
+        ingredients:    document.getElementById('edit-ingredients').value.trim(),
+        process:        document.getElementById('edit-process').value.trim(),
+        efficacy:       document.getElementById('edit-efficacy').value.trim(),
+        reference:      document.getElementById('edit-reference').value.trim(),
+        size:           document.getElementById('edit-size').value.trim(),
+        image_filename: document.getElementById('edit-image_filename').value.trim(),
+        category_ids
+      };
+
+      if (!data.name) {
+        alert('产品名称为必填项');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          alert('更新成功！');
+          location.reload();
+        } else {
+          const err = await res.json();
+          alert('更新失败：' + (err.message||res.statusText));
+        }
+      } catch (err) {
+        alert('网络错误：' + err.message);
+      }
+    });
+
+  // 删除产品
+  function deleteProduct(id) {
+    if (!confirm('确认删除？')) return;
+    fetch(`/api/products/${id}`, { method:'DELETE' })
+      .then(res => {
+        if (res.ok) {
+          alert('已删除');
+          location.reload();
+        } else {
+          alert('删除失败');
+        }
+      })
+      .catch(err => alert('网络错误：'+err.message));
+  }
 </script>
 
 {% endblock %}
